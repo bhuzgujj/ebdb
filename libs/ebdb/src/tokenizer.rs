@@ -45,6 +45,21 @@ impl<'tokenizer> Tokenizer<'tokenizer> {
 		Ok(token)
 	}
 
+	fn parse_str_litteral(curr: &str, exit_char: char) -> EbdbResult<(Token, usize)> {
+		let mut current_index: usize = 0;
+		let characters = curr.as_bytes();
+		while current_index < curr.len() {
+			let character = characters[current_index] as char;
+			if character == exit_char {
+				let string = String::from(&curr[0..current_index]);
+				return Ok((Token::Quoted(string), current_index));
+			} else {
+				current_index += 1;
+			}
+		}
+		Err(EbdbError::Custom(format!("Did not find the end charater {}", exit_char)))
+	}
+
 	fn internal_parse(mut self) -> EbdbResult<(Vec<Token>, usize)> {
 		let mut current_index: usize = 0;
 		let characters = self.string.as_bytes();
@@ -96,6 +111,17 @@ impl<'tokenizer> Tokenizer<'tokenizer> {
 					}
 					let (tokens, closing_index) = Tokenizer::from_slice(&self.string[current_index + 1..], ']').internal_parse()?;
 					self.tokens.push(Token::Square(tokens));
+					self.back_index = None;
+					current_index += closing_index + 1;
+				}
+				'"' | '\'' => {
+					if let Some(back_index) = self.back_index {
+						let slice = String::from(&self.string[back_index..current_index]);
+						self.tokens.push(Token::Identifier(slice));
+						self.back_index = None;
+					}
+					let (tokens, closing_index) = Self::parse_str_litteral(&self.string[current_index + 1..], character)?;
+					self.tokens.push(tokens);
 					self.back_index = None;
 					current_index += closing_index + 1;
 				}

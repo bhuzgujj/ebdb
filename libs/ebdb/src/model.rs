@@ -1,5 +1,3 @@
-use crate::error::EbdbResult;
-use crate::tokenizer::Token;
 use std::collections::HashMap;
 
 pub struct Structure {
@@ -7,6 +5,25 @@ pub struct Structure {
 	fields: HashMap<String, Type>
 }
 
+impl Structure {
+	pub fn new(name: String, fields: HashMap<String, Type>) -> Self {
+		Self { name, fields }
+	}
+
+	pub fn get_field(&self, name: &str) -> Option<&Type> {
+		self.fields.get(name)
+	}
+
+	pub fn get_fields(&self) -> &HashMap<String, Type> {
+		&self.fields
+	}
+
+	pub fn get_name(&self) -> &str {
+		&self.name
+	}
+}
+
+#[derive(Debug)]
 pub enum Type {
 	// Numbers
 	Integer {
@@ -48,15 +65,7 @@ pub enum Type {
 	}
 }
 
-impl Type {
-	fn from_tokens(tokens: &[Token]) -> EbdbResult<Type> {
-		if let Token::Identifier(name) = &tokens[0] {
-
-		}
-		todo!()
-	}
-}
-
+#[derive(Debug)]
 pub enum Defaults<T> {
 	Value(T),
 	Null,
