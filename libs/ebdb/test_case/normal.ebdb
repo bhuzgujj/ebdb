@@ -1,0 +1,6 @@
+table {
+	id int(64)!,
+	name char[]?,
+	price uint,
+	is_table bool,
+}
